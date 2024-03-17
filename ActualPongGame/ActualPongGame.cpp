@@ -1,7 +1,6 @@
 #include <iostream>
 #include <raylib.h>
-
-#define PIE 3.14159265
+#include <string>
 
 using namespace std;
 
@@ -14,8 +13,8 @@ class Ball {
 public:
     float x;
     float y;
-    int angle; 
-    int speed;
+    int speedX;
+    int speedY;
     int radius;
 
     void Draw() {
@@ -23,23 +22,19 @@ public:
     };
 
     void Update() {
-        x += cos(angle * PIE / 180.0) * speed;
-        y += sin(angle * PIE / 180.0) * speed;
+        x += speedX;
+        y += speedY;
     };
 
     void CheckCollision() {
-        if (y + radius < 0) {
+        if (y - radius <= 0) {
             // hits top
-            angle = -angle;
+            speedY = -speedY;
         }
-        if (y + radius > screenHeight) {
+        if (y + radius >= screenHeight) {
             // hits bottom
-            angle = -angle;
+            speedY = -speedY;
         }
-    }
-
-    void CheckPlayerCollision() {
-        if ()
     }
 
     bool GameOver() {
@@ -47,7 +42,7 @@ public:
             // hits right
             return true;
         }
-        if (y - radius < 0) {
+        if (x - radius < 0) {
             // hits left
             return true;
         }
@@ -58,20 +53,56 @@ public:
 
 class Player {
 public:
-    int x;
+    float x;
     float y;
+    int points;
     int speed;
-    int width;
-    int height;
+    float width;
+    float height;
 
     void Draw() {
         DrawRectangle(x - (width / 2), y - (height / 2), width, height, MAINCOLOR);
     };
+
+    void Update(int player) {
+        
+            if (player == 1) {
+                
+                if (y - (height / 2) >= 0) {
+                    if (IsKeyDown(KEY_W)) {
+                        // move up
+                        y -= speed;
+                    }
+                }
+                
+                if (y + (height / 2) <= screenHeight) {
+                    if (IsKeyDown(KEY_S)) {
+                        // move down
+                        y += speed;
+                    }
+                }
+            }
+            else if (player == 2) {
+                if (y - (height / 2) >= 0) {
+                    if (IsKeyDown(KEY_UP)) {
+                        // move up
+                        y -= speed;
+                    }
+                }
+
+                if (y + (height / 2) <= screenHeight) {
+                    if (IsKeyDown(KEY_DOWN)) {
+                        // move down
+                        y += speed;
+                    }
+                }
+            }
+        
+        
+    }
 };
 
 int main() {
-
-    cout << "Starting Game" << endl;
     InitWindow(screenWidth, screenHeight, "[PONG]");
     SetTargetFPS(60);
 
@@ -79,8 +110,8 @@ int main() {
     ball.x = screenWidth / 2;
     ball.y = screenHeight / 2;
     ball.radius = 10;
-    ball.speed = 5;
-    ball.angle = 60;
+    ball.speedX = 3;
+    ball.speedY = 4;
 
     int playersSpacing = 30;
 
@@ -89,12 +120,16 @@ int main() {
     p1.height = 140;
     p1.x = playersSpacing;
     p1.y = (screenHeight / 2); 
+    p1.points = 0;
+    p1.speed = 7;
 
     Player p2;
     p2.width = 20;
     p2.height = 140;
     p2.x = screenWidth - playersSpacing;
     p2.y = (screenHeight / 2);
+    p2.points = 0;
+    p2.speed = 7;
 
 
     while (!WindowShouldClose()) {
@@ -103,7 +138,21 @@ int main() {
         if (not ball.GameOver()) {
             ball.Update();
             ball.CheckCollision();
+            p1.Update(1);
+            p2.Update(2);
         }
+
+        if (CheckCollisionCircleRec({ball.x, ball.y}, ball.radius, {p1.x - (p1.width / 2), p1.y - (p1.height / 2), p1.width, p1.height})) {
+            ball.speedX *= -1;
+            p1.points++;
+        }
+
+        if (CheckCollisionCircleRec({ball.x, ball.y}, ball.radius, {p2.x - (p2.width / 2), p2.y - (p2.height / 2), p2.width, p2.height})) {
+            ball.speedX *= -1;
+            p2.points++;
+        }
+
+
 
         BeginDrawing();
         ClearBackground(BACKGROUNDCOLOR);
@@ -112,6 +161,9 @@ int main() {
         ball.Draw();
         p1.Draw();
         p2.Draw();
+        DrawText(std::to_string(p1.points).c_str(), 15, 15, 25, MAINCOLOR);
+        DrawText(std::to_string(p2.points).c_str(), screenWidth - 15 - MeasureText(std::to_string(p2.points).c_str(), 25), 15, 25, MAINCOLOR);
+
         EndDrawing();
     }
 
