@@ -61,7 +61,7 @@ public:
     float height;
 
     void Draw() {
-        DrawRectangle(x - (width / 2), y - (height / 2), width, height, MAINCOLOR);
+        DrawRectangleRounded({x - (width / 2), y - (height / 2), width, height}, 1, 100, MAINCOLOR);
     };
 
     void Update(int player) {
@@ -104,14 +104,18 @@ public:
 
 int main() {
     InitWindow(screenWidth, screenHeight, "[PONG]");
+    InitAudioDevice();
     SetTargetFPS(60);
+
+    Sound hit = LoadSound("C:\\Users\\simao\\source\\repos\\pong-game\\hit.mp3");
+   
 
     Ball ball;
     ball.x = screenWidth / 2;
     ball.y = screenHeight / 2;
     ball.radius = 10;
-    ball.speedX = 3;
-    ball.speedY = 4;
+    ball.speedX = 5;
+    ball.speedY = 6;
 
     int playersSpacing = 30;
 
@@ -145,11 +149,13 @@ int main() {
         if (CheckCollisionCircleRec({ball.x, ball.y}, ball.radius, {p1.x - (p1.width / 2), p1.y - (p1.height / 2), p1.width, p1.height})) {
             ball.speedX *= -1;
             p1.points++;
+            PlaySound(hit);
         }
 
         if (CheckCollisionCircleRec({ball.x, ball.y}, ball.radius, {p2.x - (p2.width / 2), p2.y - (p2.height / 2), p2.width, p2.height})) {
             ball.speedX *= -1;
             p2.points++;
+            PlaySound(hit);
         }
 
 
